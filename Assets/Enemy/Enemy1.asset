@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72b24549d9d53024bb661c6d78d26d53, type: 3}
+  m_Name: Enemy1
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyData
+  enemyName: "\uC2AC\uB77C\uC784"
+  Hp: 5000
+  Damage: 300
+  defense: 0
+  animatorController: {fileID: 9100000, guid: f78f3425d7fd55841bdc258429077e24, type: 2}
+  attackAnims: []
+  hurtAnims:
+  - animName: "\uD53C\uACA9"
+    animParameter: Hit
+    animType: 0
+  defenseAnims:
+  - animName: "\uBC29\uC5B4"
+    animParameter: Shield
+    animType: 1
+  dieAnims:
+  - animName: "\uC8FD\uC74C"
+    animParameter: Death
+    animType: 1
