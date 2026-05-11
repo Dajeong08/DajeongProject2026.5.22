@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Enemy1
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
   enemyName: "\uC2AC\uB77C\uC784"
-  Hp: 5000
+  Hp: 2000
   Damage: 300
   defense: 0
   animatorController: {fileID: 9100000, guid: f78f3425d7fd55841bdc258429077e24, type: 2}

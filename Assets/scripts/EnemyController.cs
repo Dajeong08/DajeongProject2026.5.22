@@ -61,7 +61,7 @@ public class EnemyController : MonoBehaviour
         Vector3 dashTarget = originalPos + Vector3.left * dashDistance;
 
         float elapsed = 0f;
-        while (elapsed < 0.08f)  // 0.2f → 0.08f ✅
+        while (elapsed < 0.08f)
         {
             transform.position = Vector3.Lerp(transform.position, dashTarget, elapsed / 0.08f);
             elapsed += Time.deltaTime;
@@ -69,15 +69,32 @@ public class EnemyController : MonoBehaviour
         }
         transform.position = dashTarget;
 
-        // 2. 공격 애니메이션 + 데미지
-        PlayRandomAnim(enemyData.attackAnims);
-        player.TakeDamage(enemyData.Damage);
+        // --- 데미지 계산 로직 추가 ---
+        int finalDamage;
 
-        yield return new WaitForSeconds(0.1f);  // 0.3f → 0.1f ✅
+        // 5% 확률로 크리티컬 터짐 (0~100 사이 랜덤 값이 5보다 작으면 실행)
+        if (Random.Range(0, 100) < 5)
+        {
+            finalDamage = 777;
+            Debug.Log("<color=red>★ 크리티컬 발생! ★</color> 데미지: 777");
+        }
+        else
+        {
+            // 기본 공격: 200 ~ 500 사이 랜덤 (Max값은 포함되지 않으므로 501 설정)
+            finalDamage = Random.Range(200, 501);
+            Debug.Log($"적 공격! 데미지: {finalDamage}");
+        }
+        // ---------------------------
+
+        // 2. 공격 애니메이션 + 계산된 데미지 입히기
+        PlayRandomAnim(enemyData.attackAnims);
+        player.TakeDamage(finalDamage);
+
+        yield return new WaitForSeconds(0.1f);
 
         // 3. 빠르게 복귀
         elapsed = 0f;
-        while (elapsed < 0.12f)  // 0.3f → 0.12f ✅
+        while (elapsed < 0.12f)
         {
             transform.position = Vector3.Lerp(transform.position, originalPos, elapsed / 0.12f);
             elapsed += Time.deltaTime;
@@ -102,6 +119,8 @@ public class EnemyController : MonoBehaviour
     {
         yield return new WaitForSeconds(1.0f);
         gameObject.SetActive(false);
+
+        FindObjectOfType<BattleManager>().CheckBattleEnd();
     }
 
     void PlayRandomAnim(List<EnemyAnimData> animList)

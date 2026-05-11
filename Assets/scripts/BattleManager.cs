@@ -3,8 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-// ✅ 이 부분이 누락되어서 에러가 나는 것입니다. 이 위치에 복사해 넣으세요!
 public enum TurnState { PlayerTurn, EnemyTurn, Wait }
+
+// ✅ 라운드별 적 설정을 위한 클래스
+[System.Serializable]
+public class RoundEnemySettings
+{
+    public string roundDescription;
+    public List<EnemyData> enemyPool;
+
+    [Range(1, 10)] // 인스펙터에서 슬라이더로 조절 가능하게 하여 0 방지
+    public int spawnCount = 1;
+}
 
 public class BattleManager : MonoBehaviour
 {
@@ -18,16 +28,64 @@ public class BattleManager : MonoBehaviour
 
     [Header("UI")]
     public Button endTurnButton;
+    public GameObject gamePanel;
 
-    [Header("적 연결")]
-    public EnemyController enemy;
+    [Header("적 스폰 설정")]
+    public GameObject enemyPrefab;
+    public Transform[] enemySpawnPoints;
 
-    void Start() { StartCoroutine(InitGame()); }
+    // ✅ 인스펙터에서 라운드 순서대로 설정 (0번=1라운드, 1번=2라운드...)
+    [Header("라운드별 적 데이터 설정")]
+    public List<RoundEnemySettings> roundSettings = new List<RoundEnemySettings>();
+
+    [HideInInspector]
+    public List<EnemyController> activeEnemies = new List<EnemyController>();
+
+    // ✅ 맵 매니저에서 라운드 번호를 받아 전투 준비
+    public void PrepareBattle(int roundIndex)
+    {
+        ClearHand();
+        foreach (var e in activeEnemies) { if (e != null) Destroy(e.gameObject); }
+        activeEnemies.Clear();
+
+        // 라운드 설정에 맞는 적 스폰
+        if (roundIndex < roundSettings.Count)
+        {
+            RoundEnemySettings settings = roundSettings[roundIndex];
+
+            // 💡 값이 제대로 들어왔는지 콘솔창에서 확인
+            Debug.Log($"{settings.roundDescription} 준비 중 - 설정된 소환 수: {settings.spawnCount}");
+
+            // 0이 입력되는 것을 방지하는 코드 (최소 1마리 보장)
+            int actualCount = Mathf.Max(1, settings.spawnCount);
+            SpawnEnemies(settings.enemyPool, actualCount);
+        }
+
+        gamePanel.SetActive(true);
+        StartCoroutine(InitGame());
+    }
+
+    void SpawnEnemies(List<EnemyData> pool, int count)
+    {
+        if (pool == null || pool.Count == 0) return;
+
+        for (int i = 0; i < count; i++)
+        {
+            if (i >= enemySpawnPoints.Length) break;
+
+            GameObject go = Instantiate(enemyPrefab, enemySpawnPoints[i].position, Quaternion.identity);
+            go.transform.SetParent(gamePanel.transform, true);
+
+            EnemyController ec = go.GetComponent<EnemyController>();
+            ec.enemyData = pool[Random.Range(0, pool.Count)];
+            ec.Init();
+            activeEnemies.Add(ec);
+        }
+    }
 
     IEnumerator InitGame()
     {
         yield return new WaitForSeconds(0.1f);
-        if (enemy != null) enemy.Init();
         StartPlayerTurn();
     }
 
@@ -35,10 +93,7 @@ public class BattleManager : MonoBehaviour
     {
         currentState = TurnState.PlayerTurn;
         player.ResetEnergy();
-
-        // ✅ 턴마다 초기화 대신, 지속 시간을 깎음
         player.TickShieldTurns();
-
         DrawCards(5);
         if (endTurnButton != null) endTurnButton.interactable = true;
     }
@@ -57,16 +112,34 @@ public class BattleManager : MonoBehaviour
         ClearHand();
         yield return new WaitForSeconds(1.0f);
 
-        if (enemy != null && enemy.gameObject.activeSelf)
+        foreach (var e in activeEnemies)
         {
-            enemy.AttackPlayer(player);
+            if (e != null && e.gameObject.activeSelf)
+            {
+                e.AttackPlayer(player);
+                yield return new WaitForSeconds(1.2f);
+            }
         }
 
-        yield return new WaitForSeconds(1.5f);
-        // 적 공격 직후에도 방어력이 다 깎였다면 애니메이션 체크를 위해 한 번 더 호출 가능
+        yield return new WaitForSeconds(0.5f);
         if (player.GetTotalShield() <= 0) player.EndDefenseAnimation();
 
         StartPlayerTurn();
+    }
+
+    public void CheckBattleEnd()
+    {
+        bool allDead = true;
+        foreach (var e in activeEnemies)
+        {
+            if (e != null && e.gameObject.activeSelf) { allDead = false; break; }
+        }
+
+        if (allDead)
+        {
+            MapManager map = FindObjectOfType<MapManager>();
+            if (map != null) map.FinishRound();
+        }
     }
 
     public void DrawCards(int count)
@@ -86,6 +159,10 @@ public class BattleManager : MonoBehaviour
     void ClearHand()
     {
         List<GameObject> toRemove = new List<GameObject>(handLayout.cards);
-        foreach (GameObject card in toRemove) handLayout.RemoveCard(card);
+        foreach (GameObject card in toRemove)
+        {
+            if (card != null) Destroy(card);
+        }
+        handLayout.cards.Clear();
     }
 }

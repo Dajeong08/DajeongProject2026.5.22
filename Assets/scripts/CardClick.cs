@@ -69,29 +69,58 @@ public class CardClick : MonoBehaviour, IPointerClickHandler
     {
         CardDisplay display = GetComponent<CardDisplay>();
         PlayerController player = FindObjectOfType<PlayerController>();
-        EnemyController enemy = FindObjectOfType<EnemyController>();
+        // 기존의 단일 적 참조 대신 BattleManager를 통해 적 리스트에 접근합니다.
+        BattleManager bm = FindObjectOfType<BattleManager>();
+        EnemyController targetEnemy = null;
+
+        // 1. 현재 필드에서 살아있는 첫 번째 적을 타겟으로 설정
+        if (bm != null && bm.activeEnemies != null)
+        {
+            foreach (var e in bm.activeEnemies)
+            {
+                if (e != null && e.gameObject.activeSelf)
+                {
+                    targetEnemy = e;
+                    break;
+                }
+            }
+        }
 
         if (display != null && display.cardData != null && player != null)
         {
             int cardCost = display.cardData.cost;
             if (player.CanUseCard(cardCost))
             {
+                // 에너지 소모 및 애니메이션 실행
                 player.UseEnergy(cardCost);
                 player.PlayCardAnimation(display.cardData);
 
-                if (display.cardData.damage > 0 && enemy != null)
-                    enemy.TakeDamage(display.cardData.damage);
+                // 2. 데미지 로직: 타겟팅된 적이 있을 때만 데미지 입힘
+                if (display.cardData.damage > 0 && targetEnemy != null)
+                {
+                    targetEnemy.TakeDamage(display.cardData.damage);
+                }
 
-                // ✅ 수정: 방어력과 지속 시간을 함께 전달
+                // 3. 방어력 로직: 방어력과 지속 시간을 함께 전달
                 if (display.cardData.shield > 0)
+                {
                     player.AddShield(display.cardData.shield, display.cardData.shieldDuration);
+                }
 
+                // 4. 후처리: 프리뷰 해제 및 카드 파괴
                 isPreviewing = false;
                 currentPreviewCard = null;
                 HandLayoutManager hand = GetComponentInParent<HandLayoutManager>();
-                if (hand != null) hand.RemoveCard(gameObject);
+                if (hand != null)
+                {
+                    hand.RemoveCard(gameObject);
+                }
             }
-            else CancelPreview();
+            else
+            {
+                // 에너지가 부족하면 사용 취소
+                CancelPreview();
+            }
         }
     }
 }
