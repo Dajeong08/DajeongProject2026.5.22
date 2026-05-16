@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public enum TurnState { PlayerTurn, EnemyTurn, Wait }
 
@@ -11,9 +12,16 @@ public class RoundEnemySettings
 {
     public string roundDescription;
     public List<EnemyData> enemyPool;
+}
 
-    [Range(1, 10)] // 인스펙터에서 슬라이더로 조절 가능하게 하여 0 방지
-    public int spawnCount = 1;
+[System.Serializable]
+public class EnemyUiSlot
+{
+    public GameObject namePlateObject;
+    public TextMeshProUGUI nameText;
+    public TextMeshProUGUI hpText;
+    public Slider hpSlider;
+    public Slider shieldSlider;
 }
 
 public class BattleManager : MonoBehaviour
@@ -34,6 +42,9 @@ public class BattleManager : MonoBehaviour
     public GameObject enemyPrefab;
     public Transform[] enemySpawnPoints;
 
+    [Header("적 UI 슬롯")]
+    public EnemyUiSlot[] enemyUiSlots;
+
     // ✅ 인스펙터에서 라운드 순서대로 설정 (0번=1라운드, 1번=2라운드...)
     [Header("라운드별 적 데이터 설정")]
     public List<RoundEnemySettings> roundSettings = new List<RoundEnemySettings>();
@@ -42,27 +53,33 @@ public class BattleManager : MonoBehaviour
     public List<EnemyController> activeEnemies = new List<EnemyController>();
 
     // ✅ 맵 매니저에서 라운드 번호를 받아 전투 준비
-    public void PrepareBattle(int roundIndex)
+    public void PrepareBattle(int roundIndex, NodeType nodeType)
     {
         ClearHand();
         foreach (var e in activeEnemies) { if (e != null) Destroy(e.gameObject); }
         activeEnemies.Clear();
+        HideEnemyUiSlots();
 
         // 라운드 설정에 맞는 적 스폰
         if (roundIndex < roundSettings.Count)
         {
             RoundEnemySettings settings = roundSettings[roundIndex];
+            int spawnCount = GetSpawnCount(nodeType);
 
             // 💡 값이 제대로 들어왔는지 콘솔창에서 확인
-            Debug.Log($"{settings.roundDescription} 준비 중 - 설정된 소환 수: {settings.spawnCount}");
+            Debug.Log($"{settings.roundDescription} 준비 중 - 노드 타입: {nodeType}, 소환 수: {spawnCount}");
 
-            // 0이 입력되는 것을 방지하는 코드 (최소 1마리 보장)
-            int actualCount = Mathf.Max(1, settings.spawnCount);
-            SpawnEnemies(settings.enemyPool, actualCount);
+            SpawnEnemies(settings.enemyPool, spawnCount);
         }
 
         gamePanel.SetActive(true);
         StartCoroutine(InitGame());
+    }
+
+    int GetSpawnCount(NodeType nodeType)
+    {
+        if (nodeType == NodeType.HardBattle) return 2;
+        return 1;
     }
 
     void SpawnEnemies(List<EnemyData> pool, int count)
@@ -78,8 +95,33 @@ public class BattleManager : MonoBehaviour
 
             EnemyController ec = go.GetComponent<EnemyController>();
             ec.enemyData = pool[Random.Range(0, pool.Count)];
+            AssignEnemyUiSlot(ec, i);
             ec.Init();
             activeEnemies.Add(ec);
+        }
+    }
+
+    void AssignEnemyUiSlot(EnemyController enemy, int index)
+    {
+        if (enemy == null || enemyUiSlots == null || index >= enemyUiSlots.Length) return;
+
+        EnemyUiSlot slot = enemyUiSlots[index];
+        enemy.SetUiReferences(slot.namePlateObject, slot.nameText, slot.hpText, slot.hpSlider, slot.shieldSlider);
+    }
+
+    void HideEnemyUiSlots()
+    {
+        if (enemyUiSlots == null) return;
+
+        foreach (EnemyUiSlot slot in enemyUiSlots)
+        {
+            if (slot == null) continue;
+
+            if (slot.namePlateObject != null) slot.namePlateObject.SetActive(false);
+            if (slot.nameText != null) slot.nameText.gameObject.SetActive(false);
+            if (slot.hpText != null) slot.hpText.gameObject.SetActive(false);
+            if (slot.hpSlider != null) slot.hpSlider.gameObject.SetActive(false);
+            if (slot.shieldSlider != null) slot.shieldSlider.gameObject.SetActive(false);
         }
     }
 
@@ -116,7 +158,8 @@ public class BattleManager : MonoBehaviour
         {
             if (e != null && e.gameObject.activeSelf)
             {
-                e.AttackPlayer(player);
+                e.TakeTurn(player);
+                if (player.HP <= 0) yield break;
                 yield return new WaitForSeconds(1.2f);
             }
         }
@@ -137,14 +180,24 @@ public class BattleManager : MonoBehaviour
 
         if (allDead)
         {
-            MapManager map = FindObjectOfType<MapManager>();
-            if (map != null) map.FinishRound();
+            if (GamePresentationManager.Instance != null)
+            {
+                GamePresentationManager.Instance.ShowVictory();
+            }
+            else
+            {
+                MapManager map = FindObjectOfType<MapManager>();
+                if (map != null) map.FinishRound();
+            }
         }
     }
 
     public void DrawCards(int count)
     {
         if (deckList.Count == 0) return;
+        if (GamePresentationManager.Instance != null)
+            GamePresentationManager.Instance.PlayCardDraw();
+
         for (int i = 0; i < count; i++)
         {
             int randomIndex = Random.Range(0, deckList.Count);

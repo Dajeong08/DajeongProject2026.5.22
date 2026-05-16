@@ -1,37 +1,76 @@
 using UnityEngine;
-using System.Collections.Generic;
-
 public enum EnemyAnimType { Trigger, Bool }
 
 [System.Serializable]
 public class EnemyAnimData
 {
-    public string animName;        // 이 애니메이션 용도 (예: "강공격")
-    public string animParameter;   // Animator 파라미터 이름
+    public string animName;
+    public string animParameter;
     public EnemyAnimType animType;
+}
+
+[System.Serializable]
+public class EnemyAttackData
+{
+    public bool canUse;
+    public int damage;
+    public string animParameter;
+    public EnemyAnimType animType;
+}
+
+[System.Serializable]
+public class EnemyCriticalData
+{
+    public bool canUse;
+    [Range(0, 100)] public int chancePercent = 5;
+    public int damage;
+}
+
+[System.Serializable]
+public class EnemyHealData
+{
+    public bool canUse;
+    public int healAmount;
+    [Range(0, 100)] public int hpThresholdPercent;
+    public int cooldownTurns;
+}
+
+[System.Serializable]
+public class EnemyDefenseData
+{
+    public bool canUse;
+    public int shieldAmount;
+    public int durationTurns = 1;
+    [Range(0, 100)] public int hpThresholdPercent;
+    public int cooldownTurns;
 }
 
 [CreateAssetMenu(fileName = "New Enemy", menuName = "ScriptableObjects/EnemyData")]
 public class EnemyData : ScriptableObject
 {
-    [Header("기본 정보")]
+    [Header("Basic")]
     public string enemyName;
     public int Hp;
     public int Damage;
     public int defense;
 
-    [Header("애니메이터")]
-    public RuntimeAnimatorController animatorController; // ✅ 핵심!
+    [Header("Animator")]
+    public RuntimeAnimatorController animatorController;
 
-    [Header("공격 애니메이션")]
-    public List<EnemyAnimData> attackAnims;
+    [Header("Direction")]
+    public bool flipX;
 
-    [Header("피격 애니메이션")]
-    public List<EnemyAnimData> hurtAnims;
+    [Header("Attack Movement")]
+    public bool useDashAttack;
 
-    [Header("방어 애니메이션")]
-    public List<EnemyAnimData> defenseAnims;
+    [Header("Actions")]
+    public EnemyAttackData attack1 = new EnemyAttackData { canUse = true, damage = 200 };
+    public EnemyAttackData attack2 = new EnemyAttackData();
+    public EnemyCriticalData critical = new EnemyCriticalData();
+    public EnemyHealData heal = new EnemyHealData();
+    public EnemyDefenseData defenseAction = new EnemyDefenseData();
 
-    [Header("사망 애니메이션")]
-    public List<EnemyAnimData> dieAnims;
+    [Header("Reaction Animations")]
+    public EnemyAnimData hurtAnim = new EnemyAnimData();
+    public EnemyAnimData deathAnim = new EnemyAnimData();
 }

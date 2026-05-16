@@ -19,5 +19,5 @@ MonoBehaviour:
   shieldDuration: 2
   cardImage: {fileID: 0}
   description: "1\uD134 \uB3D9\uC548 100\uC758 \uBCF4\uD638\uB9C9\uC744 \uC5BB\uC2B5\uB2C8\uB2E4."
-  animationParameter: KeepShield
+  animationParameter: Shield
   animType: 1

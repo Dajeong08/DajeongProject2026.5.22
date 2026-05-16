@@ -2,38 +2,71 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
-using System.Collections.Generic;
 
 public class EnemyController : MonoBehaviour
 {
-    [Header("적 데이터")]
+    [Header("Data")]
     public EnemyData enemyData;
 
-    [Header("UI 연결")]
+    [Header("UI")]
+    public GameObject namePlateObject;
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI hpText;
     public Slider hpSlider;
+    public Slider shieldSlider;
 
-    [Header("돌진 설정")]
-    public float dashDistance = 150f;  // 얼마나 앞으로 올지
-    public float dashSpeed = 10f;      // 속도
+    [Header("Dash Attack")]
+    public float dashDistance = 150f;
+    public float dashOutDuration = 0.08f;
+    public float dashBackDuration = 0.12f;
 
     private int currentHp;
     private Animator anim;
-    private Vector3 originalPos;      // 원래 위치 저장
+    private Vector3 originalPos;
 
     public void Init()
     {
         if (enemyData == null) return;
 
         anim = GetComponent<Animator>();
-        if (enemyData.animatorController != null)
+        if (anim != null && enemyData.animatorController != null)
             anim.runtimeAnimatorController = enemyData.animatorController;
 
+        ApplyDirection();
+
         currentHp = enemyData.Hp;
-        originalPos = transform.position;  // ✅ 원래 위치 저장
+        originalPos = transform.position;
         UpdateUI();
-        Debug.Log($"Init 호출됨! HP: {enemyData.Hp}");
+        Debug.Log($"Enemy initialized. HP: {enemyData.Hp}");
+    }
+
+    public void SetUiReferences(GameObject namePlate, TextMeshProUGUI nameLabel, TextMeshProUGUI hpLabel, Slider hpBar, Slider shieldBar)
+    {
+        namePlateObject = namePlate;
+        nameText = nameLabel;
+        hpText = hpLabel;
+        hpSlider = hpBar;
+        shieldSlider = shieldBar;
+        SetUiVisible(true);
+        UpdateUI();
+    }
+
+    public void SetUiVisible(bool isVisible)
+    {
+        if (namePlateObject != null) namePlateObject.SetActive(isVisible);
+        if (nameText != null) nameText.gameObject.SetActive(isVisible);
+        if (hpText != null) hpText.gameObject.SetActive(isVisible);
+        if (hpSlider != null) hpSlider.gameObject.SetActive(isVisible);
+        if (shieldSlider != null) shieldSlider.gameObject.SetActive(isVisible);
+    }
+
+    void ApplyDirection()
+    {
+        SpriteRenderer[] spriteRenderers = GetComponentsInChildren<SpriteRenderer>(true);
+        foreach (SpriteRenderer spriteRenderer in spriteRenderers)
+        {
+            spriteRenderer.flipX = enemyData.flipX;
+        }
     }
 
     public void TakeDamage(int damage)
@@ -43,96 +76,131 @@ public class EnemyController : MonoBehaviour
         currentHp = Mathf.Max(0, currentHp);
         UpdateUI();
 
-        PlayRandomAnim(enemyData.hurtAnims);
-        Debug.Log($"들어온 데미지: {damage}, 방어력: {enemyData.defense}, 실제 데미지: {realDamage}");
+        DamagePopupManager.ShowDamage(transform.position + Vector3.up * 0.6f, realDamage);
+        PlayAnim(enemyData.hurtAnim);
+        Debug.Log($"Enemy took damage. Input: {damage}, Defense: {enemyData.defense}, Final: {realDamage}");
 
         if (currentHp <= 0) Die();
     }
 
-    // ✅ 돌진 후 공격
-    public void AttackPlayer(PlayerController player)
+    public void TakeTurn(PlayerController player)
     {
-        StartCoroutine(DashAttack(player));
+        EnemyAttackData selectedAttack = ChooseAttack();
+        int finalDamage = CalculateAttackDamage(selectedAttack);
+
+        if (enemyData != null && enemyData.useDashAttack)
+        {
+            StartCoroutine(DashAttack(player, selectedAttack, finalDamage));
+            return;
+        }
+
+        AttackWithoutDash(player, selectedAttack, finalDamage);
     }
 
-    IEnumerator DashAttack(PlayerController player)
+    public void AttackPlayer(PlayerController player)
     {
-        // 1. 빠르게 돌진
+        TakeTurn(player);
+    }
+
+    IEnumerator DashAttack(PlayerController player, EnemyAttackData attackData, int finalDamage)
+    {
         Vector3 dashTarget = originalPos + Vector3.left * dashDistance;
 
         float elapsed = 0f;
-        while (elapsed < 0.08f)
+        while (elapsed < dashOutDuration)
         {
-            transform.position = Vector3.Lerp(transform.position, dashTarget, elapsed / 0.08f);
+            transform.position = Vector3.Lerp(originalPos, dashTarget, elapsed / dashOutDuration);
             elapsed += Time.deltaTime;
             yield return null;
         }
         transform.position = dashTarget;
 
-        // --- 데미지 계산 로직 추가 ---
-        int finalDamage;
-
-        // 5% 확률로 크리티컬 터짐 (0~100 사이 랜덤 값이 5보다 작으면 실행)
-        if (Random.Range(0, 100) < 5)
-        {
-            finalDamage = 777;
-            Debug.Log("<color=red>★ 크리티컬 발생! ★</color> 데미지: 777");
-        }
-        else
-        {
-            // 기본 공격: 200 ~ 500 사이 랜덤 (Max값은 포함되지 않으므로 501 설정)
-            finalDamage = Random.Range(200, 501);
-            Debug.Log($"적 공격! 데미지: {finalDamage}");
-        }
-        // ---------------------------
-
-        // 2. 공격 애니메이션 + 계산된 데미지 입히기
-        PlayRandomAnim(enemyData.attackAnims);
+        PlayAttackAnim(attackData);
         player.TakeDamage(finalDamage);
 
         yield return new WaitForSeconds(0.1f);
 
-        // 3. 빠르게 복귀
         elapsed = 0f;
-        while (elapsed < 0.12f)
+        while (elapsed < dashBackDuration)
         {
-            transform.position = Vector3.Lerp(transform.position, originalPos, elapsed / 0.12f);
+            transform.position = Vector3.Lerp(dashTarget, originalPos, elapsed / dashBackDuration);
             elapsed += Time.deltaTime;
             yield return null;
         }
         transform.position = originalPos;
     }
 
+    void AttackWithoutDash(PlayerController player, EnemyAttackData attackData, int finalDamage)
+    {
+        PlayAttackAnim(attackData);
+        player.TakeDamage(finalDamage);
+    }
+
+    EnemyAttackData ChooseAttack()
+    {
+        bool canUseAttack1 = enemyData.attack1 != null && enemyData.attack1.canUse;
+        bool canUseAttack2 = enemyData.attack2 != null && enemyData.attack2.canUse;
+
+        if (canUseAttack1 && canUseAttack2)
+            return Random.value < 0.5f ? enemyData.attack1 : enemyData.attack2;
+
+        if (canUseAttack2) return enemyData.attack2;
+        if (canUseAttack1) return enemyData.attack1;
+
+        return null;
+    }
+
+    int CalculateAttackDamage(EnemyAttackData attackData)
+    {
+        if (enemyData.critical != null && enemyData.critical.canUse &&
+            Random.Range(0, 100) < enemyData.critical.chancePercent)
+        {
+            int criticalDamage = enemyData.critical.damage > 0 ? enemyData.critical.damage : enemyData.Damage;
+            Debug.Log($"Critical attack! Damage: {criticalDamage}");
+            return criticalDamage;
+        }
+
+        int finalDamage = attackData != null ? attackData.damage : enemyData.Damage;
+        Debug.Log($"Enemy attack. Damage: {finalDamage}");
+        return finalDamage;
+    }
+
+    void PlayAttackAnim(EnemyAttackData attackData)
+    {
+        if (attackData == null) return;
+        PlayAnim(attackData.animParameter, attackData.animType);
+    }
+
     public void Defend()
     {
-        PlayRandomAnim(enemyData.defenseAnims);
+        Debug.Log($"{enemyData.enemyName} defense action is not implemented yet.");
     }
 
     void Die()
     {
-        PlayRandomAnim(enemyData.dieAnims);
+        PlayAnim(enemyData.deathAnim);
         StartCoroutine(DieAfterAnim());
-        
     }
 
     IEnumerator DieAfterAnim()
     {
         yield return new WaitForSeconds(1.0f);
+        SetUiVisible(false);
         gameObject.SetActive(false);
 
         FindObjectOfType<BattleManager>().CheckBattleEnd();
     }
 
-    void PlayRandomAnim(List<EnemyAnimData> animList)
+    void PlayAnim(EnemyAnimData animData)
     {
-        if (anim == null || animList == null || animList.Count == 0) return;
-        int randomIndex = Random.Range(0, animList.Count);
-        PlayAnim(animList[randomIndex].animParameter, animList[randomIndex].animType);
+        if (animData == null) return;
+        PlayAnim(animData.animParameter, animData.animType);
     }
 
     void PlayAnim(string parameter, EnemyAnimType animType)
     {
-        if (string.IsNullOrEmpty(parameter)) return;
+        if (anim == null || string.IsNullOrEmpty(parameter)) return;
+
         if (animType == EnemyAnimType.Trigger)
             anim.SetTrigger(parameter);
         else
@@ -147,6 +215,12 @@ public class EnemyController : MonoBehaviour
         {
             hpSlider.maxValue = enemyData.Hp;
             hpSlider.value = currentHp;
+        }
+
+        if (shieldSlider != null)
+        {
+            shieldSlider.maxValue = enemyData.Hp;
+            shieldSlider.value = 0;
         }
     }
 }

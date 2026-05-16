@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 72b24549d9d53024bb661c6d78d26d53, type: 3}
-  m_Name: Enemy3
+  m_Name: MidBoss
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
   enemyName: "\uC911\uAC04\uBCF4\uC2A4"
   Hp: 7777

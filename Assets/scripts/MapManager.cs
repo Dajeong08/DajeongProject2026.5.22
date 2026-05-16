@@ -83,7 +83,7 @@ public class MapManager : MonoBehaviour
             mapPanel.SetActive(false);
             battleUI.SetActive(true);
             // ✅ 수정: 문자열 타입 대신 현재 라운드 번호(0, 1, 2...)를 넘깁니다.
-            battleManager.PrepareBattle(currentRound);
+            battleManager.PrepareBattle(currentRound, type);
         }
         else if (type == NodeType.Heal)
         {
@@ -110,6 +110,8 @@ public class MapManager : MonoBehaviour
         {
             player.HP = Mathf.Min(player.HP + selectedFruit.healAmount, player.maxHP);
             player.SendMessage("UpdateHpUI", SendMessageOptions.DontRequireReceiver);
+            if (GamePresentationManager.Instance != null)
+                GamePresentationManager.Instance.PlayHealButton();
 
             healPanel.SetActive(false);
             FinishRound();
@@ -128,6 +130,8 @@ public class MapManager : MonoBehaviour
         else
         {
             Debug.Log("게임 클리어!");
+            if (GamePresentationManager.Instance != null)
+                GamePresentationManager.Instance.ShowGameClear();
         }
     }
 

@@ -12,12 +12,43 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72b24549d9d53024bb661c6d78d26d53, type: 3}
   m_Name: Enemy4
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
-  enemyName: "\uC801 4"
+  enemyName: "\uC624\uD06C"
   Hp: 4000
   Damage: 700
   defense: 0
-  animatorController: {fileID: 0}
-  attackAnims: []
-  hurtAnims: []
-  defenseAnims: []
-  dieAnims: []
+  animatorController: {fileID: 9100000, guid: 4bcb6440c0124184d9099cd2ef583b49, type: 2}
+  flipX: 0
+  useDashAttack: 0
+  attack1:
+    canUse: 1
+    damage: 200
+    animParameter: Attack
+    animType: 0
+  attack2:
+    canUse: 0
+    damage: 0
+    animParameter: 
+    animType: 0
+  critical:
+    canUse: 0
+    chancePercent: 5
+    damage: 0
+  heal:
+    canUse: 0
+    healAmount: 0
+    hpThresholdPercent: 0
+    cooldownTurns: 0
+  defenseAction:
+    canUse: 0
+    shieldAmount: 0
+    durationTurns: 1
+    hpThresholdPercent: 0
+    cooldownTurns: 0
+  hurtAnim:
+    animName: Hit
+    animParameter: Hit
+    animType: 0
+  deathAnim:
+    animName: Death
+    animParameter: Death
+    animType: 1

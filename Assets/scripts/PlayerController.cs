@@ -27,6 +27,7 @@ public class PlayerController : MonoBehaviour
     public Slider shieldSlider;
 
     private Animator anim;
+    private bool isDead;
 
     void Awake()
     {
@@ -66,14 +67,15 @@ public class PlayerController : MonoBehaviour
     {
         if (anim != null)
         {
-            anim.SetBool("KeepShield", false);
-            anim.SetBool("KeepShield_", false);
+            anim.SetBool("Shield", false);
+            anim.SetBool("CrouchShield", false);
             Debug.Log("모든 방어 애니메이션 종료");
         }
     }
 
     public void TakeDamage(int damage)
     {
+        float beforeHealthAndShield = HP + GetTotalShield();
         int totalShield = GetTotalShield();
         if (totalShield > 0)
         {
@@ -97,7 +99,16 @@ public class PlayerController : MonoBehaviour
         }
 
         UpdateHpUI();
-        if (HP <= 0) Debug.Log("게임오버!");
+        int lostAmount = Mathf.RoundToInt(beforeHealthAndShield - (HP + GetTotalShield()));
+        DamagePopupManager.ShowDamage(transform.position + Vector3.up * 0.6f, lostAmount);
+
+        if (HP <= 0 && !isDead)
+        {
+            isDead = true;
+            Debug.Log("게임오버!");
+            if (GamePresentationManager.Instance != null)
+                GamePresentationManager.Instance.ShowDefeat();
+        }
     }
 
     public int GetTotalShield()
