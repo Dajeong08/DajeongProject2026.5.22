@@ -18,7 +18,7 @@ MonoBehaviour:
   shield: 300
   shieldDuration: 1
   cardImage: {fileID: 0}
-  description: "\uC801\uC5D0\uAC8C 400\uC758 \uD53C\uD574\uB97C \uC8FC\uACE0, 1\uD134
-    \uB3D9\uC548 300\uC758 \uBCF4\uD638\uB9C9\uC744 \uC5BB\uC2B5\uB2C8\uB2E4."
+  description: "\uC801\uC5D0\uAC8C 777\uC758 \uD53C\uD574\uB97C \uC8FC\uACE0, 1\uD134
+    \uB3D9\uC548 500\uC758 \uBCF4\uD638\uB9C9\uC744 \uC5BB\uC2B5\uB2C8\uB2E4."
   animationParameter: 
   animType: 0

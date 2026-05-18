@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardData
   cardName: "\uC138\uAC8C \uB54C\uB9AC\uAE30"
   cost: 3
-  damage: 800
+  damage: 1000
   shield: 0
   shieldDuration: 0
   cardImage: {fileID: 0}
-  description: "\uC801\uC5D0\uAC8C 800\uC758 \uB370\uBBF8\uC9C0\uB97C \uC90D\uB2C8\uB2E4."
+  description: "\uC801\uC5D0\uAC8C 1000\uC758 \uB370\uBBF8\uC9C0\uB97C \uC90D\uB2C8\uB2E4."
   animationParameter: Attack2
   animType: 0

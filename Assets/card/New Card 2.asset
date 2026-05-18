@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardData
   cardName: "\uBC29\uD328\uB85C \uB54C\uB9AC\uAE30"
   cost: 2
-  damage: 300
+  damage: 500
   shield: 200
   shieldDuration: 1
   cardImage: {fileID: 0}
-  description: "\uC801\uC5D0\uAC8C 300\uC758 \uB370\uBBF8\uC9C0\uB97C \uC8FC\uACE0,
+  description: "\uC801\uC5D0\uAC8C 500\uC758 \uB370\uBBF8\uC9C0\uB97C \uC8FC\uACE0,
     1\uD134 \uB3D9\uC548 200\uC758 \uBCF4\uD638\uB9C9\uC744 \uC5BB\uC2B5\uB2C8\uB2E4."
   animationParameter: 
   animType: 0
