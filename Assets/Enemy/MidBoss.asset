@@ -16,8 +16,39 @@ MonoBehaviour:
   Hp: 7777
   Damage: 500
   defense: 0
-  animatorController: {fileID: 0}
-  attackAnims: []
-  hurtAnims: []
-  defenseAnims: []
-  dieAnims: []
+  animatorController: {fileID: 9100000, guid: bedbe898c6229734ca5a32f4e9af3c42, type: 2}
+  flipX: 1
+  useDashAttack: 0
+  attack1:
+    canUse: 1
+    damage: 200
+    animParameter: Attack1
+    animType: 0
+  attack2:
+    canUse: 1
+    damage: 300
+    animParameter: Attack2
+    animType: 0
+  critical:
+    canUse: 1
+    chancePercent: 5
+    damage: 450
+  heal:
+    canUse: 0
+    healAmount: 0
+    hpThresholdPercent: 0
+    cooldownTurns: 0
+  defenseAction:
+    canUse: 1
+    shieldAmount: 300
+    durationTurns: 1
+    hpThresholdPercent: 50
+    cooldownTurns: 5
+  hurtAnim:
+    animName: Hit
+    animParameter: Hit
+    animType: 0
+  deathAnim:
+    animName: Death
+    animParameter: Death
+    animType: 1
