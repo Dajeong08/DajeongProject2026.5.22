@@ -36,7 +36,7 @@ MonoBehaviour:
   heal:
     canUse: 1
     healAmount: 200
-    hpThresholdPercent: 30
+    hpThresholdPercent: 15
     cooldownTurns: 5
   defenseAction:
     canUse: 1

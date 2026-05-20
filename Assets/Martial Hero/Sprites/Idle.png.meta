@@ -79,7 +79,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 32
+  spritePixelsToUnits: 16
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -201,7 +201,7 @@ TextureImporter:
         width: 200
         height: 200
       alignment: 9
-      pivot: {x: 0.5, y: 0.47}
+      pivot: {x: 0.5, y: 0.436}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -223,7 +223,7 @@ TextureImporter:
         width: 200
         height: 200
       alignment: 9
-      pivot: {x: 0.5, y: 0.47}
+      pivot: {x: 0.5, y: 0.436}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -245,7 +245,7 @@ TextureImporter:
         width: 200
         height: 200
       alignment: 9
-      pivot: {x: 0.5, y: 0.47}
+      pivot: {x: 0.5, y: 0.436}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -267,7 +267,7 @@ TextureImporter:
         width: 200
         height: 200
       alignment: 9
-      pivot: {x: 0.5, y: 0.47}
+      pivot: {x: 0.5, y: 0.436}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -289,7 +289,7 @@ TextureImporter:
         width: 200
         height: 200
       alignment: 9
-      pivot: {x: 0.5, y: 0.47}
+      pivot: {x: 0.5, y: 0.436}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -311,7 +311,7 @@ TextureImporter:
         width: 200
         height: 200
       alignment: 9
-      pivot: {x: 0.5, y: 0.47}
+      pivot: {x: 0.5, y: 0.436}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -333,15 +333,15 @@ TextureImporter:
         width: 200
         height: 200
       alignment: 9
-      pivot: {x: 0.5, y: 0.47}
+      pivot: {x: 0.5, y: 0.436}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 53d5d677750c6d7469403908ce186b9f
-      internalID: 3278449094680734212
+      spriteID: 7f9d4e5d6279ef44187faa5621637087
+      internalID: 662571194
       vertices: []
       indices: 
       edges: []
@@ -355,15 +355,15 @@ TextureImporter:
         width: 200
         height: 200
       alignment: 9
-      pivot: {x: 0.5, y: 0.47}
+      pivot: {x: 0.5, y: 0.436}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: f395378497c38054695c2e72a28fb064
-      internalID: 3384493420599841878
+      spriteID: d31a2a9b4500aab48ac253818d704cb8
+      internalID: -2103819499
       vertices: []
       indices: 
       edges: []
@@ -382,7 +382,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries:
       - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":8.0,"y":1.0},"gridSpriteSize":{"x":200.0,"y":200.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.4699999988079071},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":9,"pivotUnitMode":0,"slicingType":2,"keepEmptyRects":false,"isAlternate":false}'
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":8.0,"y":1.0},"gridSpriteSize":{"x":200.0,"y":200.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.4359999895095825},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":9,"pivotUnitMode":0,"slicingType":2,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       Idle_0: 4723107735738678597
       Idle_1: -7385789195546760866
@@ -390,8 +390,8 @@ TextureImporter:
       Idle_3: 6373048116405451881
       Idle_4: 7264182050183361747
       Idle_5: -2834552850196481573
-      Idle_6: 3278449094680734212
-      Idle_7: 3384493420599841878
+      Idle_6: 662571194
+      Idle_7: -2103819499
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -10,6 +10,11 @@ public class CardDisplay : MonoBehaviour
     public TextMeshProUGUI costText;
     public Image artworkImage;
 
+    [Header("Playable Visual")]
+    [Range(0.2f, 1f)] public float unavailableAlpha = 0.55f;
+
+    private CanvasGroup canvasGroup;
+
     public void UpdateUI()
     {
         if (cardData == null) return; 
@@ -18,5 +23,17 @@ public class CardDisplay : MonoBehaviour
         descriptionText.text = cardData.description;
         costText.text = cardData.cost.ToString();
         artworkImage.sprite = cardData.cardImage;
+    }
+
+    public void SetPlayableVisual(bool isPlayable)
+    {
+        if (canvasGroup == null)
+        {
+            canvasGroup = GetComponent<CanvasGroup>();
+            if (canvasGroup == null)
+                canvasGroup = gameObject.AddComponent<CanvasGroup>();
+        }
+
+        canvasGroup.alpha = isPlayable ? 1f : unavailableAlpha;
     }
 }

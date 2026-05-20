@@ -40,10 +40,10 @@ MonoBehaviour:
     cooldownTurns: 0
   defenseAction:
     canUse: 0
-    shieldAmount: 0
+    shieldAmount: 1000
     durationTurns: 1
-    hpThresholdPercent: 0
-    cooldownTurns: 0
+    hpThresholdPercent: 50
+    cooldownTurns: 10
   hurtAnim:
     animName: "\uD53C\uACA9"
     animParameter: Hit

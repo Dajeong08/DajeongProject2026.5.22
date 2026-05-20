@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d18f73585cfecb4ab9fa47a77880318, type: 3}
+  m_Name: "\uD761\uD608\uBCA0\uAE30"
+  m_EditorClassIdentifier: Assembly-CSharp::CardData
+  cardName: "\uD761\uD608 \uBCA0\uAE30"
+  cost: 2
+  damage: 400
+  shield: 0
+  heal: 400
+  shieldDuration: 0
+  oncePerBattle: 1
+  cardImage: {fileID: -8017765588705292862, guid: 566e329cfa36c1d4fb1f835b3fef01cb, type: 3}
+  description: "\uC801\uC5D0\uAC8C 400\uB370\uBBF8\uC9C0\uB97C \uC8FC\uACE0 \uCCB4\uB825\uC744
+    400\uD68C\uBCF5\uD55C\uB2E4.(1\uD68C\uB9CC \uC0AC\uC6A9\uAC00\uB2A5) "
+  animationParameter: Attack3
+  animType: 0

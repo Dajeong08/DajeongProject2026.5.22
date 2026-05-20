@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Enemy2
   m_EditorClassIdentifier: Assembly-CSharp::EnemyData
   enemyName: "\uC774\uBE14 \uC704\uC790\uB4DC"
-  Hp: 4000
+  Hp: 3500
   Damage: 150
   defense: 0
   animatorController: {fileID: 9100000, guid: f768f531021338a4bbf2e2420e786cc3, type: 2}
@@ -32,7 +32,7 @@ MonoBehaviour:
   critical:
     canUse: 1
     chancePercent: 5
-    damage: 500
+    damage: 450
   heal:
     canUse: 0
     healAmount: 0

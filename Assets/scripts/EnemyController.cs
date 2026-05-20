@@ -31,6 +31,10 @@ public class EnemyController : MonoBehaviour
     private Vector3 originalPos;
     private bool isAlive;
     private bool isActing;
+    private int currentShield;
+    private int shieldTurnsRemaining;
+    private int healCooldownRemaining;
+    private int defenseCooldownRemaining;
 
     public bool IsAlive => isAlive;
     public bool IsActing => isActing;
@@ -46,6 +50,10 @@ public class EnemyController : MonoBehaviour
         ApplyDirection();
 
         currentHp = enemyData.Hp;
+        currentShield = 0;
+        shieldTurnsRemaining = 0;
+        healCooldownRemaining = 0;
+        defenseCooldownRemaining = 0;
         isAlive = currentHp > 0;
         originalPos = transform.position;
         UpdateUI();
@@ -86,13 +94,17 @@ public class EnemyController : MonoBehaviour
         if (!isAlive) return;
 
         int realDamage = Mathf.Max(0, damage - enemyData.defense);
+        int shieldDamage = Mathf.Min(currentShield, realDamage);
+        currentShield -= shieldDamage;
+        realDamage -= shieldDamage;
+
         currentHp -= realDamage;
         currentHp = Mathf.Max(0, currentHp);
         UpdateUI();
 
-        DamagePopupManager.ShowDamage(transform.position + Vector3.up * 0.6f, realDamage);
+        DamagePopupManager.ShowDamage(transform.position + Vector3.up * 0.6f, shieldDamage + realDamage);
         PlayAnim(enemyData.hurtAnim);
-        Debug.Log($"Enemy took damage. Input: {damage}, Defense: {enemyData.defense}, Final: {realDamage}");
+        Debug.Log($"Enemy took damage. Input: {damage}, Defense: {enemyData.defense}, Shield: {shieldDamage}, HP Damage: {realDamage}");
 
         if (currentHp <= 0) Die();
     }
@@ -101,10 +113,18 @@ public class EnemyController : MonoBehaviour
     {
         if (!isAlive) return;
 
+        TickTurnCounters();
+
+        if (TryHeal()) return;
+        if (TryDefend()) return;
+
         EnemyAttackData selectedAttack = ChooseAttack();
         int finalDamage = CalculateAttackDamage(selectedAttack);
 
-        StartCoroutine(AttackMoveRoutine(player, selectedAttack, finalDamage));
+        if (enemyData.useDashAttack)
+            StartCoroutine(DashAttack(player, selectedAttack, finalDamage));
+        else
+            StartCoroutine(AttackMoveRoutine(player, selectedAttack, finalDamage));
     }
 
     public void AttackPlayer(PlayerController player)
@@ -214,7 +234,75 @@ public class EnemyController : MonoBehaviour
 
     public void Defend()
     {
-        Debug.Log($"{enemyData.enemyName} defense action is not implemented yet.");
+        if (enemyData == null || enemyData.defenseAction == null) return;
+
+        currentShield += enemyData.defenseAction.shieldAmount;
+        shieldTurnsRemaining = Mathf.Max(1, enemyData.defenseAction.durationTurns);
+        defenseCooldownRemaining = Mathf.Max(0, enemyData.defenseAction.cooldownTurns);
+        UpdateUI();
+        DamagePopupManager.ShowShield(transform.position + Vector3.up * 0.6f, enemyData.defenseAction.shieldAmount);
+        Debug.Log($"{enemyData.enemyName} gained shield: {enemyData.defenseAction.shieldAmount}");
+    }
+
+    void TickTurnCounters()
+    {
+        if (healCooldownRemaining > 0)
+            healCooldownRemaining--;
+
+        if (defenseCooldownRemaining > 0)
+            defenseCooldownRemaining--;
+
+        if (shieldTurnsRemaining > 0)
+        {
+            shieldTurnsRemaining--;
+            if (shieldTurnsRemaining <= 0)
+                currentShield = 0;
+        }
+
+        UpdateUI();
+    }
+
+    bool TryHeal()
+    {
+        EnemyHealData healData = enemyData.heal;
+        if (healData == null || !healData.canUse) return false;
+        if (healCooldownRemaining > 0) return false;
+        if (healData.healAmount <= 0) return false;
+        if (currentHp >= enemyData.Hp) return false;
+        if (!IsHpUnderThreshold(healData.hpThresholdPercent)) return false;
+
+        int beforeHp = currentHp;
+        currentHp = Mathf.Min(currentHp + healData.healAmount, enemyData.Hp);
+        healCooldownRemaining = Mathf.Max(0, healData.cooldownTurns);
+        UpdateUI();
+
+        int healedAmount = currentHp - beforeHp;
+        DamagePopupManager.ShowHeal(transform.position + Vector3.up * 0.6f, healedAmount);
+        Debug.Log($"{enemyData.enemyName} healed: {healedAmount}");
+        return true;
+    }
+
+    bool TryDefend()
+    {
+        EnemyDefenseData defenseData = enemyData.defenseAction;
+        if (defenseData == null || !defenseData.canUse) return false;
+        if (defenseCooldownRemaining > 0) return false;
+        if (defenseData.shieldAmount <= 0) return false;
+        if (!IsHpUnderThreshold(defenseData.hpThresholdPercent)) return false;
+
+        Defend();
+        return true;
+    }
+
+    bool IsHpUnderThreshold(int thresholdPercent)
+    {
+        if (thresholdPercent <= 0) return true;
+
+        float currentPercent = enemyData.Hp > 0
+            ? (currentHp / (float)enemyData.Hp) * 100f
+            : 0f;
+
+        return currentPercent <= thresholdPercent;
     }
 
     void Die()
@@ -255,7 +343,12 @@ public class EnemyController : MonoBehaviour
     void UpdateUI()
     {
         if (nameText != null) nameText.text = enemyData.enemyName;
-        if (hpText != null) hpText.text = $"{currentHp} / {enemyData.Hp}";
+        if (hpText != null)
+        {
+            hpText.text = currentShield > 0
+                ? $"{currentHp}+{currentShield} / {enemyData.Hp}"
+                : $"{currentHp} / {enemyData.Hp}";
+        }
         if (hpSlider != null)
         {
             hpSlider.maxValue = enemyData.Hp;
@@ -265,7 +358,7 @@ public class EnemyController : MonoBehaviour
         if (shieldSlider != null)
         {
             shieldSlider.maxValue = enemyData.Hp;
-            shieldSlider.value = 0;
+            shieldSlider.value = currentShield;
         }
     }
 }

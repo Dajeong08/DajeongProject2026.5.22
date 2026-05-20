@@ -12,6 +12,7 @@ public class HandLayoutManager : MonoBehaviour
     {
         cards.Add(card);
         ArrangeCards();
+        RefreshCardPlayableStates();
     }
 
     public void RemoveCard(GameObject card)
@@ -19,6 +20,25 @@ public class HandLayoutManager : MonoBehaviour
         cards.Remove(card);
         Destroy(card);
         ArrangeCards();
+        RefreshCardPlayableStates();
+    }
+
+    public void RefreshCardPlayableStates(PlayerController player = null)
+    {
+        if (player == null)
+            player = FindObjectOfType<PlayerController>();
+
+        if (player == null) return;
+
+        foreach (GameObject card in cards)
+        {
+            if (card == null) continue;
+
+            CardDisplay display = card.GetComponent<CardDisplay>();
+            if (display == null || display.cardData == null) continue;
+
+            display.SetPlayableVisual(player.CanUseCard(display.cardData.cost));
+        }
     }
 
     //void ArrangeCards()

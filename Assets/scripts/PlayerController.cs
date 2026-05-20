@@ -128,7 +128,7 @@ public class PlayerController : MonoBehaviour
 
         int healedAmount = Mathf.RoundToInt(HP - beforeHp);
         if (healedAmount > 0)
-            DamagePopupManager.ShowDamage(transform.position + Vector3.up * 0.6f, healedAmount);
+            DamagePopupManager.ShowHeal(transform.position + Vector3.up * 0.6f, healedAmount);
     }
 
     public int GetTotalShield()
@@ -170,7 +170,15 @@ public class PlayerController : MonoBehaviour
     public bool CanUseCard(int cardCost) => currentEnergy >= cardCost;
     public void UseEnergy(int amount) { currentEnergy -= amount; UpdateEnergyUI(); }
     public void ResetEnergy() { currentEnergy = maxEnergy; UpdateEnergyUI(); }
-    void UpdateEnergyUI() { if (energyText != null) energyText.text = $"{currentEnergy} / {maxEnergy}"; }
+    void UpdateEnergyUI()
+    {
+        if (energyText != null)
+            energyText.text = $"{currentEnergy} / {maxEnergy}";
+
+        HandLayoutManager handLayout = FindObjectOfType<HandLayoutManager>();
+        if (handLayout != null)
+            handLayout.RefreshCardPlayableStates(this);
+    }
 
     public void PlayCardAnimation(CardData data)
     {

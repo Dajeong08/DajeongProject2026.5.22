@@ -53,14 +53,27 @@ public class BattleManager : MonoBehaviour
 
     [HideInInspector]
     public List<EnemyController> activeEnemies = new List<EnemyController>();
-    private readonly List<CardData> usedOnceCardsThisBattle = new List<CardData>();
+    private readonly Dictionary<CardData, int> usedOnceCardCountsThisBattle = new Dictionary<CardData, int>();
+    private readonly Dictionary<CardData, int> rewardCardCounts = new Dictionary<CardData, int>();
+    private readonly Dictionary<CardData, int> startingCardCounts = new Dictionary<CardData, int>();
+    private Coroutine autoEndTurnRoutine;
     private NodeType currentNodeType;
+
+    void Awake()
+    {
+        CaptureStartingCards();
+    }
 
     // ✅ 맵 매니저에서 라운드 번호를 받아 전투 준비
     public void PrepareBattle(int roundIndex, NodeType nodeType)
     {
         currentNodeType = nodeType;
-        usedOnceCardsThisBattle.Clear();
+        usedOnceCardCountsThisBattle.Clear();
+        if (autoEndTurnRoutine != null)
+        {
+            StopCoroutine(autoEndTurnRoutine);
+            autoEndTurnRoutine = null;
+        }
         ClearHand();
         foreach (var e in activeEnemies) { if (e != null) Destroy(e.gameObject); }
         activeEnemies.Clear();
@@ -144,11 +157,17 @@ public class BattleManager : MonoBehaviour
         player.TickShieldTurns();
         DrawCards(7);
         if (endTurnButton != null) endTurnButton.interactable = true;
+        RequestAutoEndTurnCheck();
     }
 
     public void OnEndTurnButtonClicked()
     {
         if (currentState != TurnState.PlayerTurn) return;
+        if (autoEndTurnRoutine != null)
+        {
+            StopCoroutine(autoEndTurnRoutine);
+            autoEndTurnRoutine = null;
+        }
         currentState = TurnState.Wait;
         if (endTurnButton != null) endTurnButton.interactable = false;
         StartCoroutine(EnemyTurnRoutine());
@@ -222,43 +241,230 @@ public class BattleManager : MonoBehaviour
     {
         if (card == null) return;
         deckList.Add(card);
+
+        if (!rewardCardCounts.ContainsKey(card))
+            rewardCardCounts[card] = 0;
+
+        rewardCardCounts[card]++;
+    }
+
+    public Dictionary<CardData, int> GetOwnedCardCounts()
+    {
+        Dictionary<CardData, int> ownedCardCounts = new Dictionary<CardData, int>();
+
+        foreach (KeyValuePair<CardData, int> pair in startingCardCounts)
+        {
+            if (pair.Key == null) continue;
+            ownedCardCounts[pair.Key] = Mathf.Max(1, pair.Value);
+        }
+
+        foreach (KeyValuePair<CardData, int> pair in rewardCardCounts)
+        {
+            if (pair.Key == null) continue;
+
+            if (!ownedCardCounts.ContainsKey(pair.Key))
+                ownedCardCounts[pair.Key] = 0;
+
+            ownedCardCounts[pair.Key] += pair.Value;
+        }
+
+        return ownedCardCounts;
     }
 
     public void MarkCardUsedThisBattle(CardData card)
     {
-        if (card == null || usedOnceCardsThisBattle.Contains(card)) return;
-        usedOnceCardsThisBattle.Add(card);
+        if (card == null) return;
+
+        if (!usedOnceCardCountsThisBattle.ContainsKey(card))
+            usedOnceCardCountsThisBattle[card] = 0;
+
+        usedOnceCardCountsThisBattle[card]++;
+    }
+
+    public void RequestAutoEndTurnCheck()
+    {
+        if (autoEndTurnRoutine != null)
+            StopCoroutine(autoEndTurnRoutine);
+
+        autoEndTurnRoutine = StartCoroutine(AutoEndTurnCheckRoutine());
+    }
+
+    IEnumerator AutoEndTurnCheckRoutine()
+    {
+        yield return null;
+
+        while (player != null && player.IsActing)
+            yield return null;
+
+        autoEndTurnRoutine = null;
+
+        if (currentState != TurnState.PlayerTurn) yield break;
+        if (!HasAliveEnemy()) yield break;
+        if (player == null) yield break;
+
+        bool shouldEndTurn = player.currentEnergy <= 0 || !HasPlayableCardInHand();
+        if (shouldEndTurn)
+            OnEndTurnButtonClicked();
     }
 
     public void DrawCards(int count)
     {
         List<CardData> drawPool = GetAvailableDrawPool();
         if (drawPool.Count == 0) return;
+        Dictionary<CardData, int> rewardCardsAlreadyDrawn = GetRewardCardCountsInHand();
 
         if (GamePresentationManager.Instance != null)
             GamePresentationManager.Instance.PlayCardDraw();
 
         for (int i = 0; i < count; i++)
         {
-            int randomIndex = Random.Range(0, drawPool.Count);
-            CardData data = drawPool[randomIndex];
+            List<CardData> candidates = GetDrawCandidates(drawPool, rewardCardsAlreadyDrawn);
+            if (candidates.Count == 0) break;
+
+            int randomIndex = Random.Range(0, candidates.Count);
+            CardData data = candidates[randomIndex];
             GameObject newCard = Instantiate(cardPrefab, handLayout.transform);
             CardDisplay display = newCard.GetComponent<CardDisplay>();
             if (display != null) { display.cardData = data; display.UpdateUI(); }
             handLayout.AddCard(newCard);
+
+            if (rewardCardCounts.ContainsKey(data))
+            {
+                if (!rewardCardsAlreadyDrawn.ContainsKey(data))
+                    rewardCardsAlreadyDrawn[data] = 0;
+
+                rewardCardsAlreadyDrawn[data]++;
+            }
         }
     }
 
     List<CardData> GetAvailableDrawPool()
     {
         List<CardData> drawPool = new List<CardData>();
+        Dictionary<CardData, int> deckCounts = GetDeckCardCounts();
+        Dictionary<CardData, int> includedOnceCardCounts = new Dictionary<CardData, int>();
+
         foreach (CardData card in deckList)
         {
             if (card == null) continue;
-            if (card.oncePerBattle && usedOnceCardsThisBattle.Contains(card)) continue;
+            if (card.oncePerBattle)
+            {
+                int usedCount = usedOnceCardCountsThisBattle.ContainsKey(card)
+                    ? usedOnceCardCountsThisBattle[card]
+                    : 0;
+                int includedCount = includedOnceCardCounts.ContainsKey(card)
+                    ? includedOnceCardCounts[card]
+                    : 0;
+                int availableCopies = deckCounts[card] - usedCount;
+
+                if (includedCount >= availableCopies) continue;
+
+                includedOnceCardCounts[card] = includedCount + 1;
+            }
+
             drawPool.Add(card);
         }
         return drawPool;
+    }
+
+    Dictionary<CardData, int> GetDeckCardCounts()
+    {
+        Dictionary<CardData, int> deckCounts = new Dictionary<CardData, int>();
+        foreach (CardData card in deckList)
+        {
+            if (card == null) continue;
+
+            if (!deckCounts.ContainsKey(card))
+                deckCounts[card] = 0;
+
+            deckCounts[card]++;
+        }
+
+        return deckCounts;
+    }
+
+    void CaptureStartingCards()
+    {
+        startingCardCounts.Clear();
+
+        foreach (CardData card in deckList)
+        {
+            if (card == null || startingCardCounts.ContainsKey(card)) continue;
+            startingCardCounts[card] = 1;
+        }
+    }
+
+    List<CardData> GetDrawCandidates(List<CardData> drawPool, Dictionary<CardData, int> rewardCardsAlreadyDrawn)
+    {
+        List<CardData> candidates = new List<CardData>();
+        foreach (CardData card in drawPool)
+        {
+            if (card == null) continue;
+            if (HasDrawnMaxRewardCopies(card, rewardCardsAlreadyDrawn)) continue;
+            candidates.Add(card);
+        }
+
+        return candidates;
+    }
+
+    bool HasDrawnMaxRewardCopies(CardData card, Dictionary<CardData, int> rewardCardsAlreadyDrawn)
+    {
+        if (!rewardCardCounts.ContainsKey(card)) return false;
+
+        int drawnCount = rewardCardsAlreadyDrawn.ContainsKey(card)
+            ? rewardCardsAlreadyDrawn[card]
+            : 0;
+
+        return drawnCount >= rewardCardCounts[card];
+    }
+
+    Dictionary<CardData, int> GetRewardCardCountsInHand()
+    {
+        Dictionary<CardData, int> cardsInHand = new Dictionary<CardData, int>();
+        if (handLayout == null || handLayout.cards == null) return cardsInHand;
+
+        foreach (GameObject cardObject in handLayout.cards)
+        {
+            if (cardObject == null) continue;
+
+            CardDisplay display = cardObject.GetComponent<CardDisplay>();
+            if (display == null || display.cardData == null) continue;
+            if (!rewardCardCounts.ContainsKey(display.cardData)) continue;
+
+            if (!cardsInHand.ContainsKey(display.cardData))
+                cardsInHand[display.cardData] = 0;
+
+            cardsInHand[display.cardData]++;
+        }
+
+        return cardsInHand;
+    }
+
+    bool HasPlayableCardInHand()
+    {
+        if (player == null || handLayout == null || handLayout.cards == null) return false;
+
+        foreach (GameObject cardObject in handLayout.cards)
+        {
+            if (cardObject == null) continue;
+
+            CardDisplay display = cardObject.GetComponent<CardDisplay>();
+            if (display == null || display.cardData == null) continue;
+            if (player.CanUseCard(display.cardData.cost)) return true;
+        }
+
+        return false;
+    }
+
+    bool HasAliveEnemy()
+    {
+        foreach (EnemyController enemy in activeEnemies)
+        {
+            if (enemy != null && enemy.IsAlive)
+                return true;
+        }
+
+        return false;
     }
 
     void ClearHand()

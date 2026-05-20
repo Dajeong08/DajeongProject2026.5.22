@@ -11,8 +11,11 @@ public class DamagePopupManager : MonoBehaviour
 
     [Header("Style")]
     public Color damageColor = new Color(1f, 0.22f, 0.16f);
+    public Color healColor = new Color(0.25f, 1f, 0.35f);
+    public Color shieldColor = new Color(0.35f, 0.65f, 1f);
     public float fontSize = 42f;
     public float duration = 0.75f;
+    [Range(0f, 0.5f)] public float fadeInRatio = 0.2f;
     public float riseDistance = 70f;
     public Vector2 randomOffset = new Vector2(20f, 12f);
 
@@ -35,6 +38,26 @@ public class DamagePopupManager : MonoBehaviour
         if (manager == null) return;
 
         manager.Show(worldPosition, $"-{amount}", manager.damageColor);
+    }
+
+    public static void ShowHeal(Vector3 worldPosition, int amount)
+    {
+        if (amount <= 0) return;
+
+        DamagePopupManager manager = GetOrCreateInstance();
+        if (manager == null) return;
+
+        manager.Show(worldPosition, $"+{amount}", manager.healColor);
+    }
+
+    public static void ShowShield(Vector3 worldPosition, int amount)
+    {
+        if (amount <= 0) return;
+
+        DamagePopupManager manager = GetOrCreateInstance();
+        if (manager == null) return;
+
+        manager.Show(worldPosition, $"+{amount}", manager.shieldColor);
     }
 
     static DamagePopupManager GetOrCreateInstance()
@@ -117,7 +140,10 @@ public class DamagePopupManager : MonoBehaviour
             rect.anchoredPosition = Vector2.Lerp(startPosition, endPosition, t);
 
             Color color = baseColor;
-            color.a = 1f - t;
+            float fadeInEnd = Mathf.Max(0.01f, fadeInRatio);
+            color.a = t < fadeInEnd
+                ? Mathf.Lerp(0f, 1f, t / fadeInEnd)
+                : Mathf.Lerp(1f, 0f, (t - fadeInEnd) / (1f - fadeInEnd));
             textUi.color = color;
 
             elapsed += Time.deltaTime;

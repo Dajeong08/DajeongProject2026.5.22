@@ -146,6 +146,9 @@ public class CardClick : MonoBehaviour, IPointerClickHandler
                 {
                     hand.RemoveCard(gameObject);
                 }
+
+                if (bm != null)
+                    bm.RequestAutoEndTurnCheck();
             }
             else
             {
