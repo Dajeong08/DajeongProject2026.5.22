@@ -1515,8 +1515,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8838e044537d51a44bc0bf8a5408ac97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NewMonoBehaviourScript
-  HP: 4000
-  maxHP: 4000
+  HP: 3500
+  maxHP: 3500
   maxEnergy: 3
   currentEnergy: 0
   activeShields: []
