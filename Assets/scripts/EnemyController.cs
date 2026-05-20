@@ -20,9 +20,20 @@ public class EnemyController : MonoBehaviour
     public float dashOutDuration = 0.08f;
     public float dashBackDuration = 0.12f;
 
+    [Header("Attack Movement")]
+    public float attackMoveDistance = 1.5f;
+    public float attackMoveOutDuration = 0.12f;
+    public float attackHoldDuration = 1.5f;
+    public float attackMoveBackDuration = 0.16f;
+
     private int currentHp;
     private Animator anim;
     private Vector3 originalPos;
+    private bool isAlive;
+    private bool isActing;
+
+    public bool IsAlive => isAlive;
+    public bool IsActing => isActing;
 
     public void Init()
     {
@@ -35,6 +46,7 @@ public class EnemyController : MonoBehaviour
         ApplyDirection();
 
         currentHp = enemyData.Hp;
+        isAlive = currentHp > 0;
         originalPos = transform.position;
         UpdateUI();
         Debug.Log($"Enemy initialized. HP: {enemyData.Hp}");
@@ -71,6 +83,8 @@ public class EnemyController : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
+        if (!isAlive) return;
+
         int realDamage = Mathf.Max(0, damage - enemyData.defense);
         currentHp -= realDamage;
         currentHp = Mathf.Max(0, currentHp);
@@ -85,16 +99,12 @@ public class EnemyController : MonoBehaviour
 
     public void TakeTurn(PlayerController player)
     {
+        if (!isAlive) return;
+
         EnemyAttackData selectedAttack = ChooseAttack();
         int finalDamage = CalculateAttackDamage(selectedAttack);
 
-        if (enemyData != null && enemyData.useDashAttack)
-        {
-            StartCoroutine(DashAttack(player, selectedAttack, finalDamage));
-            return;
-        }
-
-        AttackWithoutDash(player, selectedAttack, finalDamage);
+        StartCoroutine(AttackMoveRoutine(player, selectedAttack, finalDamage));
     }
 
     public void AttackPlayer(PlayerController player)
@@ -104,6 +114,7 @@ public class EnemyController : MonoBehaviour
 
     IEnumerator DashAttack(PlayerController player, EnemyAttackData attackData, int finalDamage)
     {
+        isActing = true;
         Vector3 dashTarget = originalPos + Vector3.left * dashDistance;
 
         float elapsed = 0f;
@@ -118,7 +129,7 @@ public class EnemyController : MonoBehaviour
         PlayAttackAnim(attackData);
         player.TakeDamage(finalDamage);
 
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(attackHoldDuration);
 
         elapsed = 0f;
         while (elapsed < dashBackDuration)
@@ -128,6 +139,36 @@ public class EnemyController : MonoBehaviour
             yield return null;
         }
         transform.position = originalPos;
+        isActing = false;
+    }
+
+    IEnumerator AttackMoveRoutine(PlayerController player, EnemyAttackData attackData, int finalDamage)
+    {
+        isActing = true;
+        Vector3 startPosition = originalPos;
+        Vector3 attackPosition = startPosition + Vector3.left * attackMoveDistance;
+
+        float elapsed = 0f;
+        while (elapsed < attackMoveOutDuration)
+        {
+            transform.position = Vector3.Lerp(startPosition, attackPosition, elapsed / attackMoveOutDuration);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        transform.position = attackPosition;
+
+        AttackWithoutDash(player, attackData, finalDamage);
+        yield return new WaitForSeconds(attackHoldDuration);
+
+        elapsed = 0f;
+        while (elapsed < attackMoveBackDuration)
+        {
+            transform.position = Vector3.Lerp(attackPosition, startPosition, elapsed / attackMoveBackDuration);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        transform.position = startPosition;
+        isActing = false;
     }
 
     void AttackWithoutDash(PlayerController player, EnemyAttackData attackData, int finalDamage)
@@ -178,6 +219,10 @@ public class EnemyController : MonoBehaviour
 
     void Die()
     {
+        if (!isAlive) return;
+
+        isAlive = false;
+        isActing = false;
         PlayAnim(enemyData.deathAnim);
         StartCoroutine(DieAfterAnim());
     }

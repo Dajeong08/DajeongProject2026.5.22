@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using System.Collections;
 
 public class GamePresentationManager : MonoBehaviour
 {
@@ -14,6 +16,7 @@ public class GamePresentationManager : MonoBehaviour
 
     [Header("Managers")]
     public MapManager mapManager;
+    public BattleManager battleManager;
 
     [Header("Audio Sources")]
     public AudioSource bgmSource;
@@ -24,8 +27,15 @@ public class GamePresentationManager : MonoBehaviour
     public AudioClip defeatClip;
     public AudioClip victoryClip;
     public AudioClip gameClearClip;
-    public AudioClip healButtonClip;
+    public AudioClip buttonClickClip;
     public AudioClip cardDrawClip;
+    public AudioClip cardClickClip;
+
+    [Header("Card Draw SFX")]
+    [Range(0f, 1f)] public float cardDrawVolume = 0.45f;
+    public float cardDrawMaxDuration = 1.5f;
+
+    private Coroutine cardDrawRoutine;
 
     void Awake()
     {
@@ -36,6 +46,7 @@ public class GamePresentationManager : MonoBehaviour
         }
 
         Instance = this;
+        EnsureSfxSource();
         PlayBgm();
     }
 
@@ -43,6 +54,8 @@ public class GamePresentationManager : MonoBehaviour
     {
         if (startPanel != null)
             ShowStartScreen();
+
+        RegisterButtonSounds();
     }
 
     public void ShowStartScreen()
@@ -90,7 +103,12 @@ public class GamePresentationManager : MonoBehaviour
         if (mapManager == null)
             mapManager = FindObjectOfType<MapManager>();
 
-        if (mapManager != null)
+        if (battleManager == null)
+            battleManager = FindObjectOfType<BattleManager>();
+
+        if (battleManager != null)
+            battleManager.ContinueAfterBattleVictory();
+        else if (mapManager != null)
             mapManager.FinishRound();
     }
 
@@ -110,12 +128,45 @@ public class GamePresentationManager : MonoBehaviour
 
     public void PlayHealButton()
     {
-        PlaySfx(healButtonClip);
+        PlayButtonClick();
+    }
+
+    public void PlayButtonClick()
+    {
+        PlaySfx(buttonClickClip);
     }
 
     public void PlayCardDraw()
     {
-        PlaySfx(cardDrawClip);
+        if (sfxSource == null || cardDrawClip == null) return;
+
+        if (cardDrawRoutine != null)
+            StopCoroutine(cardDrawRoutine);
+
+        cardDrawRoutine = StartCoroutine(PlayCardDrawRoutine());
+    }
+
+    IEnumerator PlayCardDrawRoutine()
+    {
+        sfxSource.Stop();
+        sfxSource.clip = cardDrawClip;
+        sfxSource.volume = cardDrawVolume;
+        sfxSource.loop = false;
+        sfxSource.Play();
+
+        yield return new WaitForSeconds(cardDrawMaxDuration);
+
+        if (sfxSource.clip == cardDrawClip)
+            sfxSource.Stop();
+
+        sfxSource.clip = null;
+        sfxSource.volume = 1f;
+        cardDrawRoutine = null;
+    }
+
+    public void PlayCardClick()
+    {
+        PlaySfx(cardClickClip);
     }
 
     void PlayBgm()
@@ -131,6 +182,24 @@ public class GamePresentationManager : MonoBehaviour
     {
         if (sfxSource == null || clip == null) return;
         sfxSource.PlayOneShot(clip);
+    }
+
+    void EnsureSfxSource()
+    {
+        if (sfxSource != null) return;
+
+        sfxSource = gameObject.AddComponent<AudioSource>();
+        sfxSource.playOnAwake = false;
+    }
+
+    public void RegisterButtonSounds()
+    {
+        Button[] buttons = FindObjectsOfType<Button>(true);
+        foreach (Button button in buttons)
+        {
+            button.onClick.RemoveListener(PlayButtonClick);
+            button.onClick.AddListener(PlayButtonClick);
+        }
     }
 
     void HideAllResultScreens()

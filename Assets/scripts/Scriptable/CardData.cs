@@ -9,7 +9,9 @@ public class CardData : ScriptableObject
     public int cost;
     public int damage;
     public int shield;
+    public int heal;
     public int shieldDuration; // 방어력 지속 턴수 (예: 3)
+    public bool oncePerBattle;
     public Sprite cardImage;
     [TextArea]
     public string description;

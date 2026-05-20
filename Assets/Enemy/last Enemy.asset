@@ -21,18 +21,18 @@ MonoBehaviour:
   useDashAttack: 0
   attack1:
     canUse: 1
-    damage: 200
+    damage: 400
     animParameter: Attack1
     animType: 0
   attack2:
     canUse: 1
-    damage: 300
+    damage: 500
     animParameter: Attack2
     animType: 0
   critical:
     canUse: 1
     chancePercent: 5
-    damage: 500
+    damage: 777
   heal:
     canUse: 1
     healAmount: 200

@@ -27,12 +27,14 @@ public class EnemyUiSlot
 public class BattleManager : MonoBehaviour
 {
     public TurnState currentState;
+    public bool IsPlayerTurn => currentState == TurnState.PlayerTurn;
 
     [Header("참조")]
     public PlayerController player;
     public HandLayoutManager handLayout;
     public GameObject cardPrefab;
     public List<CardData> deckList = new List<CardData>();
+    public CardRewardManager cardRewardManager;
 
     [Header("UI")]
     public Button endTurnButton;
@@ -51,10 +53,14 @@ public class BattleManager : MonoBehaviour
 
     [HideInInspector]
     public List<EnemyController> activeEnemies = new List<EnemyController>();
+    private readonly List<CardData> usedOnceCardsThisBattle = new List<CardData>();
+    private NodeType currentNodeType;
 
     // ✅ 맵 매니저에서 라운드 번호를 받아 전투 준비
     public void PrepareBattle(int roundIndex, NodeType nodeType)
     {
+        currentNodeType = nodeType;
+        usedOnceCardsThisBattle.Clear();
         ClearHand();
         foreach (var e in activeEnemies) { if (e != null) Destroy(e.gameObject); }
         activeEnemies.Clear();
@@ -136,13 +142,15 @@ public class BattleManager : MonoBehaviour
         currentState = TurnState.PlayerTurn;
         player.ResetEnergy();
         player.TickShieldTurns();
-        DrawCards(5);
+        DrawCards(7);
         if (endTurnButton != null) endTurnButton.interactable = true;
     }
 
     public void OnEndTurnButtonClicked()
     {
         if (currentState != TurnState.PlayerTurn) return;
+        currentState = TurnState.Wait;
+        if (endTurnButton != null) endTurnButton.interactable = false;
         StartCoroutine(EnemyTurnRoutine());
     }
 
@@ -156,10 +164,11 @@ public class BattleManager : MonoBehaviour
 
         foreach (var e in activeEnemies)
         {
-            if (e != null && e.gameObject.activeSelf)
+            if (e != null && e.IsAlive)
             {
                 e.TakeTurn(player);
                 if (player.HP <= 0) yield break;
+                yield return new WaitUntil(() => e == null || !e.IsActing);
                 yield return new WaitForSeconds(1.2f);
             }
         }
@@ -175,7 +184,7 @@ public class BattleManager : MonoBehaviour
         bool allDead = true;
         foreach (var e in activeEnemies)
         {
-            if (e != null && e.gameObject.activeSelf) { allDead = false; break; }
+            if (e != null && e.IsAlive) { allDead = false; break; }
         }
 
         if (allDead)
@@ -192,21 +201,64 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+    public void ContinueAfterBattleVictory()
+    {
+        if (cardRewardManager == null)
+            cardRewardManager = FindObjectOfType<CardRewardManager>(true);
+
+        if (cardRewardManager != null && cardRewardManager.ShowReward(currentNodeType))
+            return;
+
+        FinishBattleRound();
+    }
+
+    public void FinishBattleRound()
+    {
+        MapManager map = FindObjectOfType<MapManager>();
+        if (map != null) map.FinishRound();
+    }
+
+    public void AddCardToDeck(CardData card)
+    {
+        if (card == null) return;
+        deckList.Add(card);
+    }
+
+    public void MarkCardUsedThisBattle(CardData card)
+    {
+        if (card == null || usedOnceCardsThisBattle.Contains(card)) return;
+        usedOnceCardsThisBattle.Add(card);
+    }
+
     public void DrawCards(int count)
     {
-        if (deckList.Count == 0) return;
+        List<CardData> drawPool = GetAvailableDrawPool();
+        if (drawPool.Count == 0) return;
+
         if (GamePresentationManager.Instance != null)
             GamePresentationManager.Instance.PlayCardDraw();
 
         for (int i = 0; i < count; i++)
         {
-            int randomIndex = Random.Range(0, deckList.Count);
-            CardData data = deckList[randomIndex];
+            int randomIndex = Random.Range(0, drawPool.Count);
+            CardData data = drawPool[randomIndex];
             GameObject newCard = Instantiate(cardPrefab, handLayout.transform);
             CardDisplay display = newCard.GetComponent<CardDisplay>();
             if (display != null) { display.cardData = data; display.UpdateUI(); }
             handLayout.AddCard(newCard);
         }
+    }
+
+    List<CardData> GetAvailableDrawPool()
+    {
+        List<CardData> drawPool = new List<CardData>();
+        foreach (CardData card in deckList)
+        {
+            if (card == null) continue;
+            if (card.oncePerBattle && usedOnceCardsThisBattle.Contains(card)) continue;
+            drawPool.Add(card);
+        }
+        return drawPool;
     }
 
     void ClearHand()

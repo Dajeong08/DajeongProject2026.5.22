@@ -38,6 +38,9 @@ public class CardClick : MonoBehaviour, IPointerClickHandler
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (GamePresentationManager.Instance != null)
+            GamePresentationManager.Instance.PlayCardClick();
+
         if (!isPreviewing)
         {
             if (currentPreviewCard != null && currentPreviewCard != this) currentPreviewCard.CancelPreview();
@@ -73,12 +76,18 @@ public class CardClick : MonoBehaviour, IPointerClickHandler
         BattleManager bm = FindObjectOfType<BattleManager>();
         EnemyController targetEnemy = null;
 
+        if (bm == null || !bm.IsPlayerTurn || player == null || player.IsActing)
+        {
+            CancelPreview();
+            return;
+        }
+
         // 1. 현재 필드에서 살아있는 첫 번째 적을 타겟으로 설정
         if (bm != null && bm.activeEnemies != null)
         {
             foreach (var e in bm.activeEnemies)
             {
-                if (e != null && e.gameObject.activeSelf)
+                if (e != null && e.IsAlive)
                 {
                     targetEnemy = e;
                     break;
@@ -91,6 +100,12 @@ public class CardClick : MonoBehaviour, IPointerClickHandler
             int cardCost = display.cardData.cost;
             if (player.CanUseCard(cardCost))
             {
+                if (display.cardData.damage > 0 && targetEnemy == null)
+                {
+                    CancelPreview();
+                    return;
+                }
+
                 // 에너지 소모 및 애니메이션 실행
                 player.UseEnergy(cardCost);
                 player.PlayCardAnimation(display.cardData);
@@ -98,13 +113,29 @@ public class CardClick : MonoBehaviour, IPointerClickHandler
                 // 2. 데미지 로직: 타겟팅된 적이 있을 때만 데미지 입힘
                 if (display.cardData.damage > 0 && targetEnemy != null)
                 {
-                    targetEnemy.TakeDamage(display.cardData.damage);
+                    EnemyController enemyToHit = targetEnemy;
+                    int damage = display.cardData.damage;
+                    player.PlayAttackMovement(() =>
+                    {
+                        if (enemyToHit != null && enemyToHit.IsAlive)
+                            enemyToHit.TakeDamage(damage);
+                    });
+                }
+
+                if (display.cardData.heal > 0)
+                {
+                    player.Heal(display.cardData.heal);
                 }
 
                 // 3. 방어력 로직: 방어력과 지속 시간을 함께 전달
                 if (display.cardData.shield > 0)
                 {
                     player.AddShield(display.cardData.shield, display.cardData.shieldDuration);
+                }
+
+                if (display.cardData.oncePerBattle && bm != null)
+                {
+                    bm.MarkCardUsedThisBattle(display.cardData);
                 }
 
                 // 4. 후처리: 프리뷰 해제 및 카드 파괴
