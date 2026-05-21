@@ -10,16 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7d18f73585cfecb4ab9fa47a77880318, type: 3}
-  m_Name: New Card 4
+  m_Name: "\uB3CC\uBA70 \uB54C\uB9AC\uAE302"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "\uB354 \uB450\uAEBC\uC6B4 \uBCF4\uD638\uB9C9"
-  cost: 3
-  damage: 0
-  shield: 500
+  cardName: "\uB3CC\uBA70 \uB54C\uB9AC\uAE30"
+  cost: 2
+  damage: 500
+  shield: 200
   heal: 0
   shieldDuration: 1
   oncePerBattle: 0
-  cardImage: {fileID: -1809990542682187697, guid: 088ad82a1d382e946b5028b61084b786, type: 3}
-  description: "1\uD134 \uB3D9\uC548 500\uC758 \uBCF4\uD638\uB9C9\uC744 \uC5BB\uC2B5\uB2C8\uB2E4."
-  animationParameter: CrouchShield
-  animType: 1
+  cardImage: {fileID: -7084785141753852499, guid: 3cb2369578acd4b4d8a13bd5d8d69766, type: 3}
+  description: "\uC801\uC5D0\uAC8C 500\uC758 \uB370\uBBF8\uC9C0\uB97C \uC8FC\uACE0,
+    1\uD134 \uB3D9\uC548 200\uC758 \uBCF4\uD638\uB9C9\uC744 \uC5BB\uC2B5\uB2C8\uB2E4."
+  animationParameter: Attack3
+  animType: 0

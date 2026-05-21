@@ -10,17 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7d18f73585cfecb4ab9fa47a77880318, type: 3}
-  m_Name: "\uAC00\uBCBC\uC6B4 \uCC0C\uB974\uAE30"
+  m_Name: "\uBC1C\uB85C \uCC28\uAE301"
   m_EditorClassIdentifier: Assembly-CSharp::CardData
-  cardName: "\uAC00\uBCBC\uC6B4 \uCC0C\uB974\uAE30"
-  cost: 0
-  damage: 150
+  cardName: "\uBC1C\uB85C \uCC28\uAE30"
+  cost: 1
+  damage: 450
   shield: 0
   heal: 0
   shieldDuration: 0
-  oncePerBattle: 1
-  cardImage: {fileID: 7240473646134579001, guid: a37a2d3a4d90c4e469a62ffb13d7c28e, type: 3}
-  description: "\uCF54\uC2A4\uD2B8\uB97C \uC0AC\uC6A9\uD558\uC9C0 \uC54A\uACE0 \uC801\uC5D0\uAC8C
-    150\uB370\uBBF8\uC9C0\uB97C \uC900\uB2E4.(1\uD68C\uB9CC \uC0AC\uC6A9\uAC00\uB2A5)"
-  animationParameter: Attack3
+  oncePerBattle: 0
+  cardImage: {fileID: -7231120201281702786, guid: ad1af53520fd0a44eb763e4119e890d7, type: 3}
+  description: "\uC801\uC5D0\uAC8C 450\uC758 \uB370\uBBF8\uC9C0\uB97C \uC90D\uB2C8\uB2E4."
+  animationParameter: Kick
   animType: 0
