@@ -1515,8 +1515,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8838e044537d51a44bc0bf8a5408ac97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NewMonoBehaviourScript
-  HP: 3500
-  maxHP: 3500
+  HP: 3000
+  maxHP: 3000
   maxEnergy: 3
   currentEnergy: 0
   activeShields: []
@@ -8378,13 +8378,13 @@ MonoBehaviour:
     button: {fileID: 319798019}
     cardDisplay: {fileID: 319798015}
   lowCostRewards:
-  - {fileID: 11400000, guid: cab397f4269880646929170fe28bf46f, type: 2}
+  - {fileID: 11400000, guid: b29d1cead0f4d124ab3a0ee8d8810f18, type: 2}
   - {fileID: 11400000, guid: b7d42104c9b9d7d4ca65de5d2bdfbd30, type: 2}
-  - {fileID: 11400000, guid: 0010ed4e92e6e804fbd31e9bbc3b5081, type: 2}
+  - {fileID: 11400000, guid: 6595ea71c8f8701498c6316fe5e7c507, type: 2}
   highCostRewards:
   - {fileID: 11400000, guid: cc03f356c5754dd49a2f4b2628ec684d, type: 2}
-  - {fileID: 11400000, guid: 6595ea71c8f8701498c6316fe5e7c507, type: 2}
-  - {fileID: 11400000, guid: b29d1cead0f4d124ab3a0ee8d8810f18, type: 2}
+  - {fileID: 11400000, guid: 0010ed4e92e6e804fbd31e9bbc3b5081, type: 2}
+  - {fileID: 11400000, guid: cab397f4269880646929170fe28bf46f, type: 2}
   bossRewards: []
 --- !u!4 &1595809577
 Transform:

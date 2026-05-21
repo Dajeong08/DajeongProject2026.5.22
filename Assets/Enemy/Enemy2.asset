@@ -31,8 +31,8 @@ MonoBehaviour:
     animType: 0
   critical:
     canUse: 1
-    chancePercent: 5
-    damage: 450
+    chancePercent: 10
+    damage: 500
   heal:
     canUse: 0
     healAmount: 0
