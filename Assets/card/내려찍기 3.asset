@@ -15,7 +15,7 @@ MonoBehaviour:
   cardName: "\uB0B4\uB824\uCC0D\uAE30"
   cost: 3
   damage: 777
-  shield: 500
+  shield: 250
   heal: 0
   shieldDuration: 1
   oncePerBattle: 0

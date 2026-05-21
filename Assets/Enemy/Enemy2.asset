@@ -26,13 +26,13 @@ MonoBehaviour:
     animType: 0
   attack2:
     canUse: 1
-    damage: 400
+    damage: 350
     animParameter: Attack2
     animType: 0
   critical:
     canUse: 1
     chancePercent: 10
-    damage: 500
+    damage: 450
   heal:
     canUse: 0
     healAmount: 0

@@ -1275,7 +1275,7 @@ Transform:
   m_GameObject: {fileID: 182776191}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 5.1, y: -3.551206, z: 0}
+  m_LocalPosition: {x: 6.17, y: -3.551206, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2183,16 +2183,16 @@ MonoBehaviour:
   healText: {fileID: 895205996}
   fruitList:
   - itemName: "\uC0AC\uACFC"
-    healAmount: 500
+    healAmount: 1000
     itemSprite: {fileID: 21300000, guid: 7660b40d1800e9d4cbc840c07030de47, type: 3}
   - itemName: "\uD669\uAE08\uC0AC\uACFC"
-    healAmount: 1000
+    healAmount: 1500
     itemSprite: {fileID: 21300000, guid: 9f3ee47bb70d4ce47941885d71cebbb8, type: 3}
   - itemName: "\uD3EC\uB3C4"
-    healAmount: 700
+    healAmount: 1200
     itemSprite: {fileID: 21300000, guid: 6ca8c74ed9d3e044dadb75bf23419b26, type: 3}
   - itemName: "\uBC14\uB098\uB098"
-    healAmount: 500
+    healAmount: 1000
     itemSprite: {fileID: 21300000, guid: cb2a358cb282dd34d9b866d1e6b70838, type: 3}
   mapLines:
   - buttonsInLine:
@@ -3901,11 +3901,11 @@ RectTransform:
   - {fileID: 704394118}
   m_Father: {fileID: 77948814}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -860, y: 423}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 50, y: -100}
   m_SizeDelta: {x: 160, y: 50}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 0, y: 1}
 --- !u!114 &786310843
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7303,7 +7303,7 @@ Transform:
   m_GameObject: {fileID: 1356127580}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 3.3618078, y: -3.551206, z: 0}
+  m_LocalPosition: {x: 2.61, y: -3.551206, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -14184,8 +14184,8 @@ SceneRoots:
   - {fileID: 1400458535}
   - {fileID: 1329155427}
   - {fileID: 818169558}
-  - {fileID: 3459222}
   - {fileID: 264382444}
+  - {fileID: 3459222}
   - {fileID: 8068589429828005768}
   - {fileID: 1356127581}
   - {fileID: 182776192}

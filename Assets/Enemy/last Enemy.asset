@@ -21,28 +21,28 @@ MonoBehaviour:
   useDashAttack: 0
   attack1:
     canUse: 1
-    damage: 400
+    damage: 500
     animParameter: Attack1
     animType: 0
   attack2:
     canUse: 1
-    damage: 500
+    damage: 650
     animParameter: Attack2
     animType: 0
   critical:
     canUse: 1
     chancePercent: 10
-    damage: 777
+    damage: 900
   heal:
     canUse: 1
-    healAmount: 200
+    healAmount: 400
     hpThresholdPercent: 15
     cooldownTurns: 5
   defenseAction:
     canUse: 1
-    shieldAmount: 100
+    shieldAmount: 600
     durationTurns: 1
-    hpThresholdPercent: 50
+    hpThresholdPercent: 30
     cooldownTurns: 3
   hurtAnim:
     animName: Hit
